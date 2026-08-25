@@ -1,78 +1,267 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="/altigen.vs1/">
-
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="HexRush - İzometrik Altıgen Fetih ve Strateji Oyunu">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="HexRush">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>HexRush</title>
+  <title>HexRush | İzometrik Bozkır Stratejisi</title>
   <link rel="manifest" href="manifest.json">
   <style>
-    body {
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      background-color: #0F172A;
+      user-select: none;
+    }
+    body {
+      background-color: #060913;
+      background-image: 
+        radial-gradient(#1E293B 1px, transparent 1px),
+        linear-gradient(to right, rgba(51, 65, 85, 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(51, 65, 85, 0.08) 1px, transparent 1px);
+      background-size: 24px 24px, 48px 48px, 48px 48px;
       overflow: hidden;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      width: 100vw;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Courier New", monospace;
     }
+
     #loading-container {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
-      color: #E2E8F0;
+      gap: 20px;
+      width: 90%;
+      max-width: 380px;
     }
-    .hex-spinner {
-      width: 48px;
-      height: 48px;
+
+    /* Neo-Brutalist Monolith Card */
+    .neo-card {
+      width: 100%;
+      background: #0F172A;
       border: 3px solid #334155;
-      border-top-color: #FFD700;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
+      padding: 24px 20px;
+      box-shadow: 5px 5px 0px #020617;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
     }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+
+    /* Corner Bracket Accents */
+    .corner-bracket {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-color: #D97706;
+      border-style: solid;
+      pointer-events: none;
     }
-    .loading-text {
+    .corner-tl { top: -2px; left: -2px; border-width: 3px 0 0 3px; }
+    .corner-tr { top: -2px; right: -2px; border-width: 3px 3px 0 0; }
+    .corner-bl { bottom: -2px; left: -2px; border-width: 0 0 3px 3px; }
+    .corner-br { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; }
+
+    /* Neo-Brutalist Rotating Hexagon / Polygon Monolith */
+    .polygon-wrapper {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .hex-outer {
+      width: 88px;
+      height: 88px;
+      background: #1E293B;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      animation: rotateOuter 6s linear infinite;
+      border: 2px solid #D97706;
+      box-shadow: 0 0 0 2px #334155;
+    }
+
+    .hex-middle {
+      width: 68px;
+      height: 68px;
+      background: #0F172A;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      animation: rotateInner 4s linear infinite reverse;
+      border: 2px solid #FFC700;
+    }
+
+    .hex-core {
+      width: 36px;
+      height: 36px;
+      background: #D97706;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      animation: pulseCore 1.6s ease-in-out infinite alternate;
+    }
+
+    @keyframes rotateOuter {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes rotateInner {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes pulseCore {
+      0% { transform: scale(0.85); background: #D97706; }
+      100% { transform: scale(1.15); background: #FFC700; }
+    }
+
+    /* Telemetry Header */
+    .telemetry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 12px;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 8px;
+    }
+
+    .telemetry-title {
       font-size: 14px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: #FFD700;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      color: #F8FAFC;
+    }
+
+    .telemetry-tag {
+      background: #D97706;
+      color: #020617;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 2px 6px;
+      letter-spacing: 0.5px;
+      border: 1px solid #000;
+    }
+
+    /* Segmented Rectangular Progress Bar */
+    .progress-track {
+      width: 100%;
+      height: 18px;
+      background: #020617;
+      border: 2px solid #334155;
+      padding: 2px;
+      display: flex;
+      gap: 3px;
+      margin-bottom: 10px;
+    }
+
+    .progress-segment {
+      flex: 1;
+      height: 100%;
+      background: #1E293B;
+      animation: fillSegment 1.8s infinite ease-in-out;
+    }
+
+    .progress-segment:nth-child(1) { animation-delay: 0.0s; }
+    .progress-segment:nth-child(2) { animation-delay: 0.2s; }
+    .progress-segment:nth-child(3) { animation-delay: 0.4s; }
+    .progress-segment:nth-child(4) { animation-delay: 0.6s; }
+    .progress-segment:nth-child(5) { animation-delay: 0.8s; }
+    .progress-segment:nth-child(6) { animation-delay: 1.0s; }
+    .progress-segment:nth-child(7) { animation-delay: 1.2s; }
+    .progress-segment:nth-child(8) { animation-delay: 1.4s; }
+
+    @keyframes fillSegment {
+      0%, 20% { background: #1E293B; }
+      40%, 80% { background: #D97706; }
+      90%, 100% { background: #FFC700; }
+    }
+
+    /* Subtext Status */
+    .status-text {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      color: #94A3B8;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .blink-dot {
+      width: 6px;
+      height: 6px;
+      background: #10B981;
+      display: inline-block;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
     }
   </style>
 </head>
 <body>
   <div id="loading-container">
-    <div class="hex-spinner"></div>
-    <div class="loading-text">HEXRUSH YÜKLENİYOR...</div>
+    <div class="neo-card">
+      <div class="corner-bracket corner-tl"></div>
+      <div class="corner-bracket corner-tr"></div>
+      <div class="corner-bracket corner-bl"></div>
+      <div class="corner-bracket corner-br"></div>
+
+      <div class="telemetry-header">
+        <div class="telemetry-title">HEXRUSH // BOZKIR</div>
+        <div class="telemetry-tag">v1.0</div>
+      </div>
+
+      <!-- Concentric Hexagon Polygon Core -->
+      <div class="polygon-wrapper">
+        <div class="hex-outer">
+          <div class="hex-middle">
+            <div class="hex-core"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stepped Segmented Progress -->
+      <div class="progress-track">
+        <div class="progress-segment"></div>
+        <div class="progress-segment"></div>
+        <div class="progress-segment"></div>
+        <div class="progress-segment"></div>
+        <div class="progress-segment"></div>
+        <div class="progress-segment"></div>
+        <div class="progress-segment"></div>
+        <div class="progress-segment"></div>
+      </div>
+
+      <div class="status-text">
+        <span class="blink-dot"></span>
+        <span>KADİM MATRİS BAŞLATILIYOR...</span>
+      </div>
+    </div>
   </div>
   <script src="flutter_bootstrap.js" async></script>
 </body>
