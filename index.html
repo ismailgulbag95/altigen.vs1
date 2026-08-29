@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base href="/hexrush/">
+  <base href="/altigen.vs1/">
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="HexRush - İzometrik Altıgen Fetih ve Strateji Oyunu">
@@ -24,23 +24,42 @@
       padding: 0;
       user-select: none;
     }
-    body {
+    html, body {
+      background-color: #060913;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Courier New", monospace;
+    }
+
+    #loading-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 999999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       background-color: #060913;
       background-image: 
         radial-gradient(#1E293B 1px, transparent 1px),
         linear-gradient(to right, rgba(51, 65, 85, 0.08) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(51, 65, 85, 0.08) 1px, transparent 1px);
       background-size: 24px 24px, 48px 48px, 48px 48px;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      width: 100vw;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Courier New", monospace;
+      transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.4s;
     }
 
-    #loading-container {
+    #loading-container.loaded {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .loading-content {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -230,104 +249,139 @@
 </head>
 <body>
   <div id="loading-container">
-    <div class="neo-card">
-      <div class="corner-bracket corner-tl"></div>
-      <div class="corner-bracket corner-tr"></div>
-      <div class="corner-bracket corner-bl"></div>
-      <div class="corner-bracket corner-br"></div>
+    <div class="loading-content">
+      <div class="neo-card">
+        <div class="corner-bracket corner-tl"></div>
+        <div class="corner-bracket corner-tr"></div>
+        <div class="corner-bracket corner-bl"></div>
+        <div class="corner-bracket corner-br"></div>
 
-      <div class="telemetry-header">
-        <div class="telemetry-title">HEXRUSH // KADİM BOZKIR</div>
-        <div class="telemetry-tag">VOKSEL</div>
-      </div>
-
-      <!-- 3D Isometric Voxel Hex Tile with Khaganate Tamga & Floating Voxels -->
-      <div class="voxel-loader-wrapper">
-        <svg class="voxel-svg" viewBox="0 0 140 130" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- 3D Extruded Left Bedrock Wall -->
-          <polygon points="18,65 70,95 70,118 18,88" fill="#0F172A" stroke="#334155" stroke-width="2" stroke-linejoin="round"/>
-          <line x1="35" y1="74" x2="35" y2="98" stroke="#1E293B" stroke-width="1.5"/>
-          <line x1="52" y1="84" x2="52" y2="108" stroke="#1E293B" stroke-width="1.5"/>
-
-          <!-- 3D Extruded Right Bedrock Wall -->
-          <polygon points="70,95 122,65 122,88 70,118" fill="#090D1A" stroke="#334155" stroke-width="2" stroke-linejoin="round"/>
-          <line x1="88" y1="84" x2="88" y2="108" stroke="#1E293B" stroke-width="1.5"/>
-          <line x1="105" y1="74" x2="105" y2="98" stroke="#1E293B" stroke-width="1.5"/>
-
-          <!-- Hexagon Top Isometric Surface -->
-          <polygon points="70,35 122,65 70,95 18,65" fill="#1E293B" stroke="#D97706" stroke-width="2.5" stroke-linejoin="round"/>
-
-          <!-- Steppe Inner Isometric Inset -->
-          <polygon points="70,43 110,65 70,87 30,65" fill="#0F172A" stroke="#334155" stroke-width="1.5" stroke-linejoin="round"/>
-
-          <!-- Animated Gold Radar Scanline on Hex Perimeter -->
-          <polygon class="scan-border" points="70,35 122,65 70,95 18,65" fill="none" stroke="#FFC700" stroke-width="3" stroke-linecap="round"/>
-
-          <!-- Authentic Göktürk Kağanlık Tamgası (Pulsing Center Rune) -->
-          <g class="tamga-rune">
-            <!-- Center Vertical Spine -->
-            <line x1="70" y1="52" x2="70" y2="78" stroke="#FFC700" stroke-width="2.5" stroke-linecap="round"/>
-            <!-- Top Bow Arms (Kağanlık Yayı) -->
-            <polyline points="59,57 70,52 81,57" fill="none" stroke="#FFC700" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-            <!-- Middle Cross Branch (Kut Rünü) -->
-            <line x1="62" y1="65" x2="78" y2="65" stroke="#F59E0B" stroke-width="2.2" stroke-linecap="round"/>
-            <!-- Bottom Anchor Arms (Tengri Dağ Rünü) -->
-            <polyline points="59,73 70,78 81,73" fill="none" stroke="#FFC700" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </g>
-
-          <!-- Floating Voxel Cube 1 (Food / Amber) -->
-          <g class="cube-anim-1">
-            <!-- Top -->
-            <polygon points="40,24 49,29 40,34 31,29" fill="#FBBF24" stroke="#78350F" stroke-width="1"/>
-            <!-- Left -->
-            <polygon points="31,29 40,34 40,43 31,38" fill="#D97706" stroke="#78350F" stroke-width="1"/>
-            <!-- Right -->
-            <polygon points="40,34 49,29 49,38 40,43" fill="#B45309" stroke="#78350F" stroke-width="1"/>
-          </g>
-
-          <!-- Floating Voxel Cube 2 (Timber / Pine Green) -->
-          <g class="cube-anim-2">
-            <!-- Top -->
-            <polygon points="70,8 79,13 70,18 61,13" fill="#34D399" stroke="#064E3B" stroke-width="1"/>
-            <!-- Left -->
-            <polygon points="61,13 70,18 70,27 61,22" fill="#10B981" stroke="#064E3B" stroke-width="1"/>
-            <!-- Right -->
-            <polygon points="70,18 79,13 79,22 70,27" fill="#047857" stroke="#064E3B" stroke-width="1"/>
-          </g>
-
-          <!-- Floating Voxel Cube 3 (Sky Iron / Lapis) -->
-          <g class="cube-anim-3">
-            <!-- Top -->
-            <polygon points="100,24 109,29 100,34 91,29" fill="#60A5FA" stroke="#1E3A8A" stroke-width="1"/>
-            <!-- Left -->
-            <polygon points="91,29 100,34 100,43 91,38" fill="#3B82F6" stroke="#1E3A8A" stroke-width="1"/>
-            <!-- Right -->
-            <polygon points="100,34 109,29 109,38 100,43" fill="#1D4ED8" stroke="#1E3A8A" stroke-width="1"/>
-          </g>
-        </svg>
-      </div>
-
-      <!-- Stepped Segmented Progress -->
-      <div class="progress-track">
-        <div class="progress-segment"></div>
-        <div class="progress-segment"></div>
-        <div class="progress-segment"></div>
-        <div class="progress-segment"></div>
-        <div class="progress-segment"></div>
-        <div class="progress-segment"></div>
-        <div class="progress-segment"></div>
-        <div class="progress-segment"></div>
-      </div>
-
-      <div class="status-text">
-        <div class="status-left">
-          <span class="blink-dot"></span>
-          <span>KADİM MATRİS BAŞLATILIYOR...</span>
+        <div class="telemetry-header">
+          <div class="telemetry-title">HEXRUSH // KADİM BOZKIR</div>
+          <div class="telemetry-tag">VOKSEL</div>
         </div>
-        <span class="telemetry-fps">60 FPS // ZERO-GC</span>
+
+        <!-- 3D Isometric Voxel Hex Tile with Khaganate Tamga & Floating Voxels -->
+        <div class="voxel-loader-wrapper">
+          <svg class="voxel-svg" viewBox="0 0 140 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- 3D Extruded Left Bedrock Wall -->
+            <polygon points="18,65 70,95 70,118 18,88" fill="#0F172A" stroke="#334155" stroke-width="2" stroke-linejoin="round"/>
+            <line x1="35" y1="74" x2="35" y2="98" stroke="#1E293B" stroke-width="1.5"/>
+            <line x1="52" y1="84" x2="52" y2="108" stroke="#1E293B" stroke-width="1.5"/>
+
+            <!-- 3D Extruded Right Bedrock Wall -->
+            <polygon points="70,95 122,65 122,88 70,118" fill="#090D1A" stroke="#334155" stroke-width="2" stroke-linejoin="round"/>
+            <line x1="88" y1="84" x2="88" y2="108" stroke="#1E293B" stroke-width="1.5"/>
+            <line x1="105" y1="74" x2="105" y2="98" stroke="#1E293B" stroke-width="1.5"/>
+
+            <!-- Hexagon Top Isometric Surface -->
+            <polygon points="70,35 122,65 70,95 18,65" fill="#1E293B" stroke="#D97706" stroke-width="2.5" stroke-linejoin="round"/>
+
+            <!-- Steppe Inner Isometric Inset -->
+            <polygon points="70,43 110,65 70,87 30,65" fill="#0F172A" stroke="#334155" stroke-width="1.5" stroke-linejoin="round"/>
+
+            <!-- Animated Gold Radar Scanline on Hex Perimeter -->
+            <polygon class="scan-border" points="70,35 122,65 70,95 18,65" fill="none" stroke="#FFC700" stroke-width="3" stroke-linecap="round"/>
+
+            <!-- Authentic Göktürk Kağanlık Tamgası (Pulsing Center Rune) -->
+            <g class="tamga-rune">
+              <!-- Center Vertical Spine -->
+              <line x1="70" y1="52" x2="70" y2="78" stroke="#FFC700" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- Top Bow Arms (Kağanlık Yayı) -->
+              <polyline points="59,57 70,52 81,57" fill="none" stroke="#FFC700" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- Middle Cross Branch (Kut Rünü) -->
+              <line x1="62" y1="65" x2="78" y2="65" stroke="#F59E0B" stroke-width="2.2" stroke-linecap="round"/>
+              <!-- Bottom Anchor Arms (Tengri Dağ Rünü) -->
+              <polyline points="59,73 70,78 81,73" fill="none" stroke="#FFC700" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+
+            <!-- Floating Voxel Cube 1 (Food / Amber) -->
+            <g class="cube-anim-1">
+              <!-- Top -->
+              <polygon points="40,24 49,29 40,34 31,29" fill="#FBBF24" stroke="#78350F" stroke-width="1"/>
+              <!-- Left -->
+              <polygon points="31,29 40,34 40,43 31,38" fill="#D97706" stroke="#78350F" stroke-width="1"/>
+              <!-- Right -->
+              <polygon points="40,34 49,29 49,38 40,43" fill="#B45309" stroke="#78350F" stroke-width="1"/>
+            </g>
+
+            <!-- Floating Voxel Cube 2 (Timber / Pine Green) -->
+            <g class="cube-anim-2">
+              <!-- Top -->
+              <polygon points="70,8 79,13 70,18 61,13" fill="#34D399" stroke="#064E3B" stroke-width="1"/>
+              <!-- Left -->
+              <polygon points="61,13 70,18 70,27 61,22" fill="#10B981" stroke="#064E3B" stroke-width="1"/>
+              <!-- Right -->
+              <polygon points="70,18 79,13 79,22 70,27" fill="#047857" stroke="#064E3B" stroke-width="1"/>
+            </g>
+
+            <!-- Floating Voxel Cube 3 (Sky Iron / Lapis) -->
+            <g class="cube-anim-3">
+              <!-- Top -->
+              <polygon points="100,24 109,29 100,34 91,29" fill="#60A5FA" stroke="#1E3A8A" stroke-width="1"/>
+              <!-- Left -->
+              <polygon points="91,29 100,34 100,43 91,38" fill="#3B82F6" stroke="#1E3A8A" stroke-width="1"/>
+              <!-- Right -->
+              <polygon points="100,34 109,29 109,38 100,43" fill="#1D4ED8" stroke="#1E3A8A" stroke-width="1"/>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Stepped Segmented Progress -->
+        <div class="progress-track">
+          <div class="progress-segment"></div>
+          <div class="progress-segment"></div>
+          <div class="progress-segment"></div>
+          <div class="progress-segment"></div>
+          <div class="progress-segment"></div>
+          <div class="progress-segment"></div>
+          <div class="progress-segment"></div>
+          <div class="progress-segment"></div>
+        </div>
+
+        <div class="status-text">
+          <div class="status-left">
+            <span class="blink-dot"></span>
+            <span>KADİM MATRİS BAŞLATILIYOR...</span>
+          </div>
+          <span class="telemetry-fps">60 FPS // ZERO-GC</span>
+        </div>
       </div>
     </div>
   </div>
+
+  <script>
+    function hideLoader() {
+      var loader = document.getElementById('loading-container');
+      if (loader && !loader.classList.contains('loaded')) {
+        loader.classList.add('loaded');
+        setTimeout(function() {
+          if (loader.parentNode) {
+            loader.parentNode.removeChild(loader);
+          }
+        }, 450);
+      }
+    }
+    window.hideHexRushLoader = hideLoader;
+    window.addEventListener('flutter-first-frame', hideLoader);
+
+    var observer = new MutationObserver(function(mutations) {
+      for (var i = 0; i < mutations.length; i++) {
+        var added = mutations[i].addedNodes;
+        for (var j = 0; j < added.length; j++) {
+          var node = added[j];
+          if (node.nodeName === 'FLUTTER-VIEW' || 
+              (node.classList && node.classList.contains('flt-glass-pane')) || 
+              node.nodeName === 'FLT-GLASS-PANE') {
+            setTimeout(hideLoader, 250);
+            observer.disconnect();
+            return;
+          }
+        }
+      }
+    });
+    observer.observe(document.body, { childList: true });
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
