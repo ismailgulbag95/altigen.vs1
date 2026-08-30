@@ -92016,38 +92016,38 @@ q=B.c.U(e,22)
 if(q<5){d=q*0.7
 p=Math.cos(d)
 o=Math.sin(q*0.5)
-n=-Math.sin(d)*7
-if(n<-0.2)d=!0
-else d=n>0.2?!1:B.h.U(a,2)===0
-m=q<3?e*2.2:0
+n=-Math.sin(d)*4.9
+if(n>0.15)d=!0
+else d=n<-0.15?!1:B.h.U(a,2)!==0
+m=q<3?e*2.5:0
 return new A.jJ(new A.b(p*7,o*4),d,m)}else if(q<9.5){l=(q-5)/4.5
 k=new A.b(Math.cos(3.5)*7,Math.sin(2.5)*4)
 j=r.aa(0,0.68)
 d=A.kZ(k,j,l*l*(3-2*l))
 d.toString
-return new A.jJ(d,j.X(0,k).a<0,e*2.8)}else if(q<15.5){i=q-9.5
+return new A.jJ(d,j.X(0,k).a>0,e*3)}else if(q<15.5){i=q-9.5
 h=r.aa(0,0.68)
 d=i*0.6
 p=Math.sin(d)
 o=Math.cos(i*0.4)
-n=Math.cos(d)*6
-if(n<-0.2)d=!0
-else d=n>0.2?!1:B.h.U(a,2)===1
-m=i<3.5?e*2:0
+n=Math.cos(d)*3.6
+if(n>0.15)d=!0
+else d=n<-0.15?!1:B.h.U(a,2)!==0
+m=i<3.5?e*2.2:0
 return new A.jJ(new A.b(h.a+p*6,h.b+o*3.5),d,m)}else if(q<20){l=(q-15.5)/4.5
 k=r.aa(0,0.68)
 d=A.kZ(k,B.n,l*l*(3-2*l))
 d.toString
-return new A.jJ(d,B.n.X(0,k).a<0,e*2.8)}else return new A.jJ(B.n,B.h.U(a,2)===0,0)}else{q=B.c.U(e,16)
+return new A.jJ(d,B.n.X(0,k).a>0,e*3)}else return new A.jJ(B.n,B.h.U(a,2)!==0,0)}else{q=B.c.U(e,16)
 if(q<4.5){l=q/4.5
 d=A.kZ(B.a3H,B.Bh,l*l*(3-2*l))
 d.toString
-return new A.jJ(d,!1,e*2.4)}else if(q<8){g=q-4.5
-return new A.jJ(new A.b(9+Math.sin(g*1.5)*1.5,-3+Math.cos(g*1.2)),!1,0)}else if(q<12.5){l=(q-8)/4.5
+return new A.jJ(d,!0,e*2.6)}else if(q<8){g=q-4.5
+return new A.jJ(new A.b(9+Math.sin(g*1.5)*1.5,-3+Math.cos(g*1.2)),!0,0)}else if(q<12.5){l=(q-8)/4.5
 d=A.kZ(B.Bh,B.a3G,l*l*(3-2*l))
 d.toString
-return new A.jJ(d,!0,e*2.4)}else{g=q-12.5
-return new A.jJ(new A.b(-5+Math.cos(g*1.5)*1.5,-6+Math.sin(g*1.2)),!0,0)}}},
+return new A.jJ(d,!1,e*2.6)}else{g=q-12.5
+return new A.jJ(new A.b(-5+Math.cos(g*1.5)*1.5,-6+Math.sin(g*1.2)),!1,0)}}},
 b6(a){var s,r=this
 r.fZ(a)
 r.xr+=a
