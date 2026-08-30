@@ -53,7 +53,6 @@ extension BuildingTypeExtension on BuildingType {
       // Seviye 1: Temel Hayatta Kalma
       case BuildingType.castle:
       case BuildingType.corn:
-      case BuildingType.quarry:
       case BuildingType.lumberjack:
       case BuildingType.worker:
         return 1;
@@ -64,11 +63,12 @@ extension BuildingTypeExtension on BuildingType {
       case BuildingType.pasture:
         return 2;
 
-      // Seviye 5: İlk Zanaat, Bilgelik ve Savunma Kulesi
+      // Seviye 5: İlk Zanaat, Bilgelik, Savunma Kulesi ve Taş Ocağı
       case BuildingType.windmill:
       case BuildingType.sawmill:
       case BuildingType.runicStele:
       case BuildingType.watchtower:
+      case BuildingType.quarry:
         return 5;
 
       // Seviye 10: Keşif ve Şifa

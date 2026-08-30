@@ -41,13 +41,14 @@ void main() {
       expect(mountainBuildings.contains(BuildingType.worker), isTrue);
       expect(mountainBuildings.contains(BuildingType.granaryVault), isTrue);
       expect(mountainBuildings.contains(BuildingType.mine), isTrue);
+      expect(mountainBuildings.contains(BuildingType.quarry), isTrue);
 
       // Çöl
       final desertBuildings = GameStateNotifier.getAllowedBuildingsForBiome(TileBiome.desert);
       expect(desertBuildings.contains(BuildingType.oasisCistern), isTrue);
       expect(desertBuildings.contains(BuildingType.caravanserai), isTrue);
       expect(desertBuildings.contains(BuildingType.astrolabe), isTrue);
-      expect(desertBuildings.contains(BuildingType.quarry), isTrue);
+      expect(desertBuildings.contains(BuildingType.quarry), isFalse);
       expect(desertBuildings.contains(BuildingType.watchtower), isTrue);
 
       // Tundra
@@ -63,7 +64,7 @@ void main() {
       final volcanoBuildings = GameStateNotifier.getAllowedBuildingsForBiome(TileBiome.volcano);
       expect(volcanoBuildings.contains(BuildingType.steamVent), isTrue);
       expect(volcanoBuildings.contains(BuildingType.obsidianForge), isTrue);
-      expect(volcanoBuildings.contains(BuildingType.quarry), isTrue);
+      expect(volcanoBuildings.contains(BuildingType.quarry), isFalse);
       expect(volcanoBuildings.contains(BuildingType.granaryVault), isTrue);
 
       // Sazlık

@@ -2316,9 +2316,9 @@ class _TileActionSheetState extends ConsumerState<TileActionSheet>
 
   String _getNextCastleUnlockDescription(int lvl) {
     if (lvl < 2) {
-      return 'Seviye 2\'de Arpa Tarlası, Büyük Mahzen ve Otlak & Ağıl açılır!';
+      return 'Seviye 2\'de Arpa Tarlası, Büyük Mahzen, Otlak & Ağıl ve Orman/Çöl Keşfi açılır!';
     } else if (lvl < 5) {
-      return 'Seviye 5\'te Değirmen (Un), Marangoz (Kalas), Rünik Yazıt Taşı (Bilgelik) ve Savunma Kulesi (Okçu) açılır!';
+      return 'Seviye 5\'te Değirmen (Un), Marangoz (Kalas), Rünik Yazıt Taşı (Bilgelik), Savunma Kulesi, Dağ Keşfi ve Taş Ocağı açılır!';
     } else if (lvl < 10) {
       return 'Seviye 10\'da Meyve Bahçesi, Reçine Kampı ve Şifacı Otağı açılır!';
     } else if (lvl < 15) {

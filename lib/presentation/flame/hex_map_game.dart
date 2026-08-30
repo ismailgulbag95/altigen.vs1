@@ -9,7 +9,6 @@ import '../../domain/models/game_state.dart';
 import '../../domain/models/hex_tile_model.dart';
 import 'components/floating_resource_number_component.dart';
 import 'components/floating_voxel_cloud_component.dart';
-import 'components/flying_voxel_bird_component.dart';
 import 'components/hex_tile_component.dart';
 import 'components/snow_particle_emitter.dart';
 import 'components/steppe_messenger_component.dart';
@@ -38,7 +37,6 @@ class HexMapGame extends FlameGame {
   final Set<String> _spawnedProjectileIds = {};
   final List<FloatingVoxelCloudComponent> _cloudComponents = [];
   late final SeasonWeatherParticleEmitter _weatherEmitter;
-  late final FlyingVoxelBirdComponent _flyingBirds;
   late final SteppeMessengerComponent _steppeMessenger;
   late final WorkerFlowArrowComponent _workerFlowArrows;
   late final DynamicLightingOverlayComponent _lightingOverlay;
@@ -99,14 +97,6 @@ class HexMapGame extends FlameGame {
 
     // 3D Voxel Yüzen Bulutlar
     _initFloatingClouds();
-
-    // 3D Voxel Uçan Kuş Sürüsü
-    _flyingBirds = FlyingVoxelBirdComponent(
-      startPos: Vector2(0, 0),
-      flightSpeed: 30.0,
-      flightRadius: 260.0,
-    );
-    gameWorld.add(_flyingBirds);
 
     // Seyrek Bozkır Kervanı / Ulak
     _steppeMessenger = SteppeMessengerComponent();

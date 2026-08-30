@@ -11,6 +11,7 @@ import '../../../domain/models/hex_tile_model.dart';
 import '../../../domain/services/symbiosis_engine.dart';
 import '../hex_map_game.dart';
 import '../renderers/viewport_culling_manager.dart';
+import '../renderers/voxel_fauna_renderer.dart';
 import '../renderers/voxel_isometric_renderer.dart';
 
 /// Biyom canlılarının dinamik hareket, yön ve animasyon verisi
@@ -1421,21 +1422,32 @@ class HexTileComponent extends PositionComponent {
 
         if (seed % 2 == 0) {
           final roamSheep = getFaunaRoamData(seed * 11 + 3, speedMultiplier: 0.85);
-          VoxelIsometricRenderer.drawVoxelSheep(
-            canvas,
-            Offset(center.dx - 2 + roamSheep.offset.dx, center.dy - 2 + roamSheep.offset.dy),
-            animTime: tTime + roamSheep.walkAnim,
-            seed: seed * 11 + 3,
-            scale: 0.85,
-            flipX: roamSheep.flipX,
-          );
+          if (seed % 4 == 0) {
+            VoxelFaunaRenderer.drawRam(
+              canvas,
+              Offset(center.dx - 2 + roamSheep.offset.dx, center.dy - 2 + roamSheep.offset.dy),
+              animTime: tTime + roamSheep.walkAnim,
+              seed: seed * 11 + 3,
+              scale: 0.9,
+              flipX: roamSheep.flipX,
+            );
+          } else {
+            VoxelFaunaRenderer.drawSheep(
+              canvas,
+              Offset(center.dx - 2 + roamSheep.offset.dx, center.dy - 2 + roamSheep.offset.dy),
+              animTime: tTime + roamSheep.walkAnim,
+              seed: seed * 11 + 3,
+              scale: 0.88,
+              flipX: roamSheep.flipX,
+            );
+          }
         }
         break;
 
       case 1:
         // Nadir Çiçek Vadisi & Koyun Sürüsü (2 Çiçek - Baharda Gelincikli) [Nadir Çiçek 1/8]
         final roamSheep1 = getFaunaRoamData(seed, speedMultiplier: 0.85);
-        VoxelIsometricRenderer.drawVoxelSheep(
+        VoxelFaunaRenderer.drawSheep(
           canvas,
           Offset(center.dx + 6 + roamSheep1.offset.dx, center.dy - 3 + roamSheep1.offset.dy),
           animTime: tTime + roamSheep1.walkAnim,
@@ -1444,12 +1456,12 @@ class HexTileComponent extends PositionComponent {
           flipX: roamSheep1.flipX,
         );
         final roamSheep2 = getFaunaRoamData(seed * 19 + 7, speedMultiplier: 1.05);
-        VoxelIsometricRenderer.drawVoxelSheep(
+        VoxelFaunaRenderer.drawLamb(
           canvas,
           Offset(center.dx - 10 + roamSheep2.offset.dx, center.dy + 5 + roamSheep2.offset.dy),
           animTime: tTime + roamSheep2.walkAnim,
           seed: seed * 19 + 7,
-          scale: 0.72,
+          scale: 0.75,
           flipX: roamSheep2.flipX,
         );
         VoxelIsometricRenderer.drawVoxelFlowers(
@@ -1474,34 +1486,19 @@ class HexTileComponent extends PositionComponent {
         break;
 
       case 2:
-        // Asil Bozkır Yılkı Atı & Çakıllar (0 Çiçek)
-        final roamHorse = getFaunaRoamData(seed, speedMultiplier: 1.0);
-        VoxelIsometricRenderer.drawVoxelHorse(
+        // Asil Bozkır Yılkı Atı (Tek Başına, Asil, Stabil & Etrafında Hiçbir Canlı Olmadan)
+        VoxelFaunaRenderer.drawHorse(
           canvas,
-          Offset(center.dx + roamHorse.offset.dx, center.dy + roamHorse.offset.dy),
-          animTime: tTime + roamHorse.walkAnim,
+          center,
+          animTime: tTime,
           seed: seed,
-          scale: 0.95,
-          flipX: roamHorse.flipX,
+          scale: 1.0,
+          flipX: (seed % 2 != 0),
           startleProgress: tapProgress,
         );
-        VoxelIsometricRenderer.drawVoxelPebbles(canvas, Offset(center.dx - 8, center.dy + 6), scale: 0.8);
-        drawGrass(Offset(center.dx + 10, center.dy - 2), scale: 1.0);
-        drawGrass(Offset(center.dx + 8, center.dy + 6), scale: 0.8);
-        drawGrass(Offset(center.dx - 2, center.dy + 2), scale: 0.9);
-        drawGrass(Offset(center.dx - 12, center.dy + 4), scale: 0.7);
-
-        if (seed % 3 == 0) {
-          final roamSheep = getFaunaRoamData(seed * 13 + 5, speedMultiplier: 0.85);
-          VoxelIsometricRenderer.drawVoxelSheep(
-            canvas,
-            Offset(center.dx + 2 + roamSheep.offset.dx, center.dy + 3 + roamSheep.offset.dy),
-            animTime: tTime + roamSheep.walkAnim,
-            seed: seed * 13 + 5,
-            scale: 0.85,
-            flipX: roamSheep.flipX,
-          );
-        }
+        drawGrass(Offset(center.dx + 10, center.dy - 6), scale: 0.9);
+        drawGrass(Offset(center.dx - 10, center.dy + 8), scale: 0.85);
+        drawGrass(Offset(center.dx + 8, center.dy + 8), scale: 0.8);
         break;
 
       case 3:
@@ -1535,32 +1532,18 @@ class HexTileComponent extends PositionComponent {
         break;
 
       case 5:
-        // Otlayan Yılkı Atı veya Koyun & Çiçeksiz Bozkır (0 Çiçek)
-        if (seed % 2 == 0) {
-          final roamHorse = getFaunaRoamData(seed * 7 + 1, speedMultiplier: 1.0);
-          VoxelIsometricRenderer.drawVoxelHorse(
-            canvas,
-            Offset(center.dx + 2 + roamHorse.offset.dx, center.dy - 2 + roamHorse.offset.dy),
-            animTime: tTime + roamHorse.walkAnim,
-            seed: seed * 7 + 1,
-            scale: 0.9,
-            flipX: roamHorse.flipX,
-            startleProgress: tapProgress,
-          );
-        } else {
-          final roamSheep = getFaunaRoamData(seed * 5 + 3, speedMultiplier: 0.85);
-          VoxelIsometricRenderer.drawVoxelSheep(
-            canvas,
-            Offset(center.dx - 3 + roamSheep.offset.dx, center.dy + 2 + roamSheep.offset.dy),
-            animTime: tTime + roamSheep.walkAnim,
-            seed: seed * 5 + 3,
-            scale: 0.9,
-            flipX: roamSheep.flipX,
-          );
-        }
+        // Otlayan Koyun & Çiçeksiz Bozkır (0 Çiçek)
+        final roamSheep = getFaunaRoamData(seed * 5 + 3, speedMultiplier: 0.85);
+        VoxelFaunaRenderer.drawSheep(
+          canvas,
+          Offset(center.dx - 3 + roamSheep.offset.dx, center.dy + 2 + roamSheep.offset.dy),
+          animTime: tTime + roamSheep.walkAnim,
+          seed: seed * 5 + 3,
+          scale: 0.9,
+          flipX: roamSheep.flipX,
+        );
         drawGrass(Offset(center.dx - 8, center.dy - 6), scale: 0.85);
         drawGrass(Offset(center.dx + 10, center.dy + 5), scale: 0.9);
-        drawGrass(Offset(center.dx - 6, center.dy + 8), scale: 0.75);
         VoxelIsometricRenderer.drawVoxelPebbles(canvas, Offset(center.dx + 6, center.dy - 7), scale: 0.75);
         break;
 
@@ -1575,7 +1558,7 @@ class HexTileComponent extends PositionComponent {
 
         if (seed % 3 == 1) {
           final roamLamb = getFaunaRoamData(seed * 9 + 4, speedMultiplier: 1.15);
-          VoxelIsometricRenderer.drawVoxelSheep(
+          VoxelFaunaRenderer.drawLamb(
             canvas,
             Offset(center.dx - 1 + roamLamb.offset.dx, center.dy - 1 + roamLamb.offset.dy),
             animTime: tTime + roamLamb.walkAnim,
@@ -1636,16 +1619,26 @@ class HexTileComponent extends PositionComponent {
       seed: seed,
     );
 
-    // Sarp Kayalıklarda Yaban Keçisi (1/3 Olasılık)
+    // Sarp Kayalıklarda Yaban Keçisi veya Bozkır Kurdu
     if (seed % 3 == 0) {
       final roamIbex = getFaunaRoamData(seed * 19 + 4, speedMultiplier: 0.8);
-      VoxelIsometricRenderer.drawVoxelMountainIbex(
+      VoxelFaunaRenderer.drawMountainIbex(
         canvas,
         Offset(center.dx + 10 + roamIbex.offset.dx, center.dy + 4 + roamIbex.offset.dy),
         animTime: tileAnimTime + roamIbex.walkAnim,
         seed: seed,
-        scale: 0.8,
+        scale: 0.82,
         flipX: roamIbex.flipX,
+      );
+    } else if (seed % 5 == 0) {
+      final roamWolf = getFaunaRoamData(seed * 13 + 9, speedMultiplier: 1.1);
+      VoxelFaunaRenderer.drawSteppeWolf(
+        canvas,
+        Offset(center.dx - 8 + roamWolf.offset.dx, center.dy + 6 + roamWolf.offset.dy),
+        animTime: tileAnimTime + roamWolf.walkAnim,
+        seed: seed * 13 + 9,
+        scale: 0.85,
+        flipX: roamWolf.flipX,
       );
     } else if (seed % 2 == 0) {
       // 2.5D Çok Katmanlı Yamaç Teras Basamakları
@@ -1728,7 +1721,7 @@ class HexTileComponent extends PositionComponent {
         VoxelIsometricRenderer.drawVoxelCactus(canvas, Offset(center.dx + 12, center.dy - 6), scale: 0.85);
         if (seed % 3 == 0) {
           final roamCamel = getFaunaRoamData(seed * 13 + 7, speedMultiplier: 0.7);
-          VoxelIsometricRenderer.drawVoxelCamel(
+          VoxelFaunaRenderer.drawCamel(
             canvas,
             Offset(center.dx - 2 + roamCamel.offset.dx, center.dy + 2 + roamCamel.offset.dy),
             animTime: tileAnimTime + roamCamel.walkAnim,
@@ -1746,7 +1739,7 @@ class HexTileComponent extends PositionComponent {
         VoxelIsometricRenderer.drawVoxelSandDunes(canvas, center, scale: 1.1);
         if (seed % 3 == 0) {
           final roamCamel = getFaunaRoamData(seed * 7 + 1, speedMultiplier: 0.72);
-          VoxelIsometricRenderer.drawVoxelCamel(
+          VoxelFaunaRenderer.drawCamel(
             canvas,
             Offset(center.dx + 4 + roamCamel.offset.dx, center.dy - 2 + roamCamel.offset.dy),
             animTime: tileAnimTime + roamCamel.walkAnim,
@@ -1783,7 +1776,7 @@ class HexTileComponent extends PositionComponent {
         VoxelIsometricRenderer.drawVoxelLichenRocks(canvas, Offset(center.dx - 6, center.dy), scale: 1.0);
         if (seed % 2 == 0) {
           final roamFox = getFaunaRoamData(seed * 17 + 2, speedMultiplier: 1.15);
-          VoxelIsometricRenderer.drawVoxelArcticFox(
+          VoxelFaunaRenderer.drawArcticFox(
             canvas,
             Offset(center.dx + 6 + roamFox.offset.dx, center.dy - 2 + roamFox.offset.dy),
             animTime: tileAnimTime + roamFox.walkAnim,
@@ -1804,7 +1797,7 @@ class HexTileComponent extends PositionComponent {
         VoxelIsometricRenderer.drawVoxelLichenRocks(canvas, Offset(center.dx + 8, center.dy + 4), scale: 0.8);
         if (seed % 3 == 0) {
           final roamFox = getFaunaRoamData(seed * 5 + 3, speedMultiplier: 1.15);
-          VoxelIsometricRenderer.drawVoxelArcticFox(
+          VoxelFaunaRenderer.drawArcticFox(
             canvas,
             Offset(center.dx - 2 + roamFox.offset.dx, center.dy + 5 + roamFox.offset.dy),
             animTime: tileAnimTime + roamFox.walkAnim,

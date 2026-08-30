@@ -5,6 +5,7 @@ import '../../../domain/models/building_model.dart';
 import '../../../domain/models/combat_model.dart';
 import '../../../domain/models/hex_tile_model.dart';
 import '../../../domain/services/symbiosis_engine.dart';
+import 'voxel_fauna_renderer.dart';
 
 /// 3D Voxel / Isometric Canlı Diorama Çizim Motoru
 /// Rüzgar salınımı, gece pencereleri, ateşböcekleri, sıçrayan balıklar, taş patikalar ve partiküller.
@@ -836,8 +837,7 @@ class VoxelIsometricRenderer {
     }
   }
 
-  /// Sevimli 3D Voxel Koyun (Organik Otlama, Çevreye Bakınma ve Zıplama Döngüsü)
-  /// Sevimli & Çok Yönlü 3D Voxel Koyun (4 Davranış Modu, 4 Renk Varyantı, Bağımsız Kulak/Kuyruk)
+  /// 3D Voxel Koyun (VoxelFaunaRenderer Köprüsü)
   static void drawVoxelSheep(
     Canvas canvas,
     Offset pos, {
@@ -846,252 +846,17 @@ class VoxelIsometricRenderer {
     int seed = 0,
     bool flipX = false,
   }) {
-    if (flipX) {
-      canvas.save();
-      canvas.translate(pos.dx, pos.dy);
-      canvas.scale(-1.0, 1.0);
-      drawVoxelSheep(canvas, Offset.zero, animTime: animTime, scale: scale, seed: seed, flipX: false);
-      canvas.restore();
-      return;
-    }
-
-    final int behaviorMode = seed % 4;
-    final int coatVariant = ((seed * 7) ~/ 3) % 4;
-    final bool hasRamHorns = (seed % 7) == 0;
-    final double timeOffset = (seed * 2.37) % 20.0;
-    final double t = animTime + timeOffset;
-
-    double bobY = 0.0;
-    double headTilt = 0.0;
-    double headYaw = 0.0;
-    double chewWobble = 0.0;
-    double bodySquash = 1.0;
-    double legStride = 0.0;
-    double tailWag = math.sin(t * 8.0) * 1.5 * scale;
-    final double earTwitchLeft = math.sin(t * 5.0 + seed).clamp(-1.0, 1.0) * 0.8 * scale;
-    final double earTwitchRight = math.sin(t * 4.3 + seed * 2).clamp(-1.0, 1.0) * 0.8 * scale;
-
-    Color woolTop;
-    Color woolLeft;
-    Color woolRight;
-
-    switch (coatVariant) {
-      case 1: // Kara Koyun (Black Sheep - Kömür/Gece Tonu)
-        woolTop = const Color(0xFF475569);
-        woolLeft = const Color(0xFF1E293B);
-        woolRight = const Color(0xFF020617);
-        break;
-      case 2: // Bozkır Kehribar / Kahve Koyun (Caramel Brown)
-        woolTop = const Color(0xFFF59E0B);
-        woolLeft = const Color(0xFFB45309);
-        woolRight = const Color(0xFF78350F);
-        break;
-      case 3: // Alaca / Benekli (Patchy spotted)
-        woolTop = const Color(0xFFFFFFFF);
-        woolLeft = const Color(0xFFCBD5E1);
-        woolRight = const Color(0xFF64748B);
-        break;
-      case 0: // Klasik Kar Beyazı (Pure White - 3D Gölgeli İpek Yünü)
-      default:
-        woolTop = const Color(0xFFFFFFFF);
-        woolLeft = const Color(0xFFCBD5E1);
-        woolRight = const Color(0xFF64748B);
-        break;
-    }
-
-    // Davranış Modları
-    switch (behaviorMode) {
-      case 0: // 1. SAKİN OTLAYICI (Grazing & Chewing)
-        final double cycle = t % 7.0;
-        if (cycle < 4.5) {
-          headTilt = 3.5 * scale;
-          chewWobble = math.sin(t * 7.0) * 0.8 * scale;
-          bobY = math.sin(t * 1.5) * 0.3 * scale;
-        } else {
-          headTilt = -0.5 * scale;
-          headYaw = math.sin(t * 2.0) * 1.5 * scale;
-          chewWobble = math.sin(t * 5.0) * 0.5 * scale;
-        }
-        break;
-
-      case 1: // 2. MERAKLI GÖZCÜ (Curious Watcher)
-        final double cycle = t % 6.0;
-        headTilt = -2.0 * scale;
-        if (cycle < 3.0) {
-          headYaw = 2.0 * scale;
-        } else {
-          headYaw = -2.0 * scale;
-        }
-        bobY = math.sin(t * 2.2) * 0.5 * scale;
-        break;
-
-      case 2: // 3. ZIPIR KUZU (Playful Bouncy Lamb)
-        final double cycle = t % 4.5;
-        scale *= 0.75;
-        if (cycle < 2.0) {
-          final double hopProgress = cycle / 2.0;
-          bobY = math.sin(hopProgress * math.pi * 4).abs() * 3.5 * scale;
-          headTilt = -2.0 * scale;
-        } else if (cycle < 3.5) {
-          legStride = math.sin(t * 10.0) * 2.0 * scale;
-          bobY = math.sin(t * 10.0).abs() * 1.5 * scale;
-        } else {
-          headYaw = math.sin(t * 3.0) * 2.0 * scale;
-        }
-        break;
-
-      case 3: // 4. TEMBEL / YATAN KOYUN (Sleepy Napper)
-        bodySquash = 0.75;
-        final double breath = math.sin(t * 1.8) * 0.5 * scale;
-        bobY = -2.0 * scale + breath;
-        headTilt = 2.0 * scale;
-        tailWag = 0.0;
-        break;
-    }
-
-    // Gövde Yünü (Voxel Wool Body)
-    drawIsoCube(
+    VoxelFaunaRenderer.drawSheep(
       canvas,
-      Offset(pos.dx, pos.dy - 3 * scale - bobY),
-      w: 12.0 * scale,
-      d: 10.0 * scale,
-      h: 8.0 * scale * bodySquash,
-      topColor: woolTop,
-      leftColor: woolLeft,
-      rightColor: woolRight,
-      drawShadow: true,
-      shadowOpacity: 0.25,
+      pos,
+      animTime: animTime,
+      scale: scale,
+      seed: seed,
+      flipX: flipX,
     );
-
-    // Alaca / Benekli ise gövdeye 1 koyu benek
-    if (coatVariant == 3) {
-      drawIsoCube(
-        canvas,
-        Offset(pos.dx + 2 * cosIso * scale, pos.dy - 4 * scale - bobY - 2 * sinIso * scale),
-        w: 4.0 * scale,
-        d: 4.0 * scale,
-        h: 4.0 * scale,
-        topColor: const Color(0xFF475569),
-        leftColor: const Color(0xFF334155),
-        rightColor: const Color(0xFF1E293B),
-      );
-    }
-
-    // Baş (Voxel Head)
-    final Offset headPos = Offset(
-      pos.dx - 6 * cosIso * scale + chewWobble + headYaw * cosIso,
-      pos.dy - 5 * scale - bobY + 3 * sinIso * scale + headTilt + headYaw * sinIso,
-    );
-
-    drawIsoCube(
-      canvas,
-      headPos,
-      w: 5.0 * scale,
-      d: 5.0 * scale,
-      h: 5.0 * scale,
-      topColor: const Color(0xFF334155),
-      leftColor: const Color(0xFF1E293B),
-      rightColor: const Color(0xFF0F172A),
-    );
-
-    // Pembe Burun (Pink Snout)
-    drawIsoCube(
-      canvas,
-      Offset(headPos.dx - 3 * cosIso * scale, headPos.dy + 1 * sinIso * scale),
-      w: 2.5 * scale,
-      d: 2.5 * scale,
-      h: 2.0 * scale,
-      topColor: const Color(0xFFFDA4AF),
-      leftColor: const Color(0xFFFB7185),
-      rightColor: const Color(0xFFE11D48),
-    );
-
-    // Kulaklar (Ears with dynamic twitches)
-    drawIsoCube(
-      canvas,
-      Offset(headPos.dx - 2 * cosIso * scale, headPos.dy - 3 * scale + earTwitchLeft),
-      w: 1.5 * scale,
-      d: 2.5 * scale,
-      h: 1.5 * scale,
-      topColor: const Color(0xFF475569),
-      leftColor: const Color(0xFF334155),
-      rightColor: const Color(0xFF1E293B),
-    );
-    drawIsoCube(
-      canvas,
-      Offset(headPos.dx + 2 * cosIso * scale, headPos.dy - 3 * scale + earTwitchRight),
-      w: 2.5 * scale,
-      d: 1.5 * scale,
-      h: 1.5 * scale,
-      topColor: const Color(0xFF475569),
-      leftColor: const Color(0xFF334155),
-      rightColor: const Color(0xFF1E293B),
-    );
-
-    // Kıvrık Koç Boynuzu (Ram Horns)
-    if (hasRamHorns && behaviorMode != 2) {
-      drawIsoCube(
-        canvas,
-        Offset(headPos.dx - 3 * cosIso * scale, headPos.dy - 4.5 * scale),
-        w: 2.0 * scale,
-        d: 3.5 * scale,
-        h: 2.5 * scale,
-        topColor: const Color(0xFFFBBF24),
-        leftColor: const Color(0xFFD97706),
-        rightColor: const Color(0xFFB45309),
-      );
-      drawIsoCube(
-        canvas,
-        Offset(headPos.dx + 3 * cosIso * scale, headPos.dy - 4.5 * scale),
-        w: 3.5 * scale,
-        d: 2.0 * scale,
-        h: 2.5 * scale,
-        topColor: const Color(0xFFFBBF24),
-        leftColor: const Color(0xFFD97706),
-        rightColor: const Color(0xFFB45309),
-      );
-    }
-
-    // Minik Kuyruk (Wagging Tail)
-    if (behaviorMode != 3) {
-      drawIsoCube(
-        canvas,
-        Offset(pos.dx + 6 * cosIso * scale + tailWag, pos.dy - 4 * scale - bobY - 4 * sinIso * scale),
-        w: 2.5 * scale,
-        d: 2.5 * scale,
-        h: 2.5 * scale,
-        topColor: woolTop,
-        leftColor: woolLeft,
-        rightColor: woolRight,
-      );
-    }
-
-    // Bacaklar (Feet if standing or walking)
-    if (behaviorMode != 3) {
-      drawIsoCube(
-        canvas,
-        Offset(pos.dx - 3 * cosIso * scale + legStride, pos.dy + 1 * scale),
-        w: 2.0 * scale,
-        d: 2.0 * scale,
-        h: 3.0 * scale,
-        topColor: const Color(0xFF1E293B),
-        leftColor: const Color(0xFF0F172A),
-        rightColor: const Color(0xFF020617),
-      );
-      drawIsoCube(
-        canvas,
-        Offset(pos.dx + 3 * cosIso * scale - legStride, pos.dy - 1 * scale),
-        w: 2.0 * scale,
-        d: 2.0 * scale,
-        h: 3.0 * scale,
-        topColor: const Color(0xFF1E293B),
-        leftColor: const Color(0xFF0F172A),
-        rightColor: const Color(0xFF020617),
-      );
-    }
   }
 
-  /// Sevimli 3D Voxel Karaca / Geyik (Organik Asil Duruş, Eğilme ve Yaylanma)
+  /// 3D Voxel Karaca / Dağ Keçisi (VoxelFaunaRenderer Köprüsü)
   static void drawVoxelDeer(
     Canvas canvas,
     Offset pos, {
@@ -1100,78 +865,17 @@ class VoxelIsometricRenderer {
     int seed = 0,
     bool flipX = false,
   }) {
-    if (flipX) {
-      canvas.save();
-      canvas.translate(pos.dx, pos.dy);
-      canvas.scale(-1.0, 1.0);
-      drawVoxelDeer(canvas, Offset.zero, animTime: animTime, scale: scale, seed: seed, flipX: false);
-      canvas.restore();
-      return;
-    }
-
-    final double timeOffset = (seed * 3.17) % 20.0;
-    final double t = animTime * 0.9 + timeOffset;
-    final int mode = seed % 3;
-
-    double bobY = 0.0;
-    double headTilt = 0.0;
-    double headYaw = 0.0;
-
-    if (mode == 0) {
-      // 1. Asil Nöbet / Dikilme
-      bobY = math.sin(t * 1.4) * 0.5 * scale;
-      headYaw = math.sin(t * 1.8) * 1.5 * scale;
-    } else if (mode == 1) {
-      // 2. Eğilip Ot Yeme
-      final double cycle = t % 6.0;
-      if (cycle < 4.0) {
-        headTilt = 4.0 * scale;
-      } else {
-        headTilt = -1.0 * scale;
-      }
-    } else {
-      // 3. Zarif Yaylanma / Adım
-      final double strideProgress = (t % 3.0) / 3.0;
-      bobY = math.sin(strideProgress * math.pi * 2).abs() * 2.2 * scale;
-    }
-
-    drawIsoCube(
+    VoxelFaunaRenderer.drawMountainIbex(
       canvas,
-      Offset(pos.dx, pos.dy - 5 * scale - bobY),
-      w: 12.0 * scale,
-      d: 8.0 * scale,
-      h: 8.0 * scale,
-      topColor: const Color(0xFFF59E0B),
-      leftColor: const Color(0xFFB45309),
-      rightColor: const Color(0xFF78350F),
-      drawShadow: true,
-      shadowOpacity: 0.32,
-    );
-
-    drawIsoCube(
-      canvas,
-      Offset(pos.dx - 6 * cosIso * scale + headYaw * cosIso, pos.dy - 10 * scale - bobY + 2 * sinIso * scale + headTilt),
-      w: 5.0 * scale,
-      d: 5.0 * scale,
-      h: 8.0 * scale,
-      topColor: const Color(0xFFFDE68A),
-      leftColor: const Color(0xFFD97706),
-      rightColor: const Color(0xFF92400E),
-    );
-
-    drawIsoCube(
-      canvas,
-      Offset(pos.dx - 6 * cosIso * scale + headYaw * cosIso, pos.dy - 18 * scale - bobY + 2 * sinIso * scale + headTilt),
-      w: 3.0 * scale,
-      d: 3.0 * scale,
-      h: 4.0 * scale,
-      topColor: const Color(0xFF92400E),
-      leftColor: const Color(0xFF78350F),
-      rightColor: const Color(0xFF451A03),
+      pos,
+      animTime: animTime,
+      scale: scale,
+      seed: seed,
+      flipX: flipX,
     );
   }
 
-  /// 3D Voxel İki Hörgüçlü İpek Yolu Devesi (Bactrian Camel - Hörgüçler, Heybe, Baş Sallama)
+  /// 3D Voxel Çöl Devesi (VoxelFaunaRenderer Köprüsü)
   static void drawVoxelCamel(
     Canvas canvas,
     Offset pos, {
@@ -1180,140 +884,17 @@ class VoxelIsometricRenderer {
     int seed = 0,
     bool flipX = false,
   }) {
-    if (flipX) {
-      canvas.save();
-      canvas.translate(pos.dx, pos.dy);
-      canvas.scale(-1.0, 1.0);
-      drawVoxelCamel(canvas, Offset.zero, animTime: animTime, scale: scale, seed: seed, flipX: false);
-      canvas.restore();
-      return;
-    }
-
-    final double t = animTime + ((seed * 3.41) % 20.0);
-    final double bobY = math.sin(t * 1.5) * 0.5 * scale;
-    final double headSway = math.sin(t * 1.8) * 1.2 * scale;
-    final double tailWag = math.sin(t * 3.0) * 1.0 * scale;
-
-    const Color bodyTop = Color(0xFFF59E0B);
-    const Color bodyLeft = Color(0xFFB45309);
-    const Color bodyRight = Color(0xFF78350F);
-
-    // Gövde Tabanı
-    drawIsoCube(
+    VoxelFaunaRenderer.drawCamel(
       canvas,
-      Offset(pos.dx, pos.dy - 8 * scale - bobY),
-      w: 16.0 * scale,
-      d: 10.0 * scale,
-      h: 8.0 * scale,
-      topColor: bodyTop,
-      leftColor: bodyLeft,
-      rightColor: bodyRight,
-      drawShadow: true,
-      shadowOpacity: 0.35,
+      pos,
+      animTime: animTime,
+      scale: scale,
+      seed: seed,
+      flipX: flipX,
     );
-
-    // Ön Hörgüç (Front Hump)
-    drawIsoCube(
-      canvas,
-      Offset(pos.dx - 3 * cosIso * scale, pos.dy - 14 * scale - bobY),
-      w: 5.0 * scale,
-      d: 6.0 * scale,
-      h: 6.0 * scale,
-      topColor: const Color(0xFFFDE047),
-      leftColor: const Color(0xFFD97706),
-      rightColor: const Color(0xFF92400E),
-    );
-
-    // Arka Hörgüç (Rear Hump)
-    drawIsoCube(
-      canvas,
-      Offset(pos.dx + 4 * cosIso * scale, pos.dy - 14 * scale - bobY),
-      w: 5.0 * scale,
-      d: 6.0 * scale,
-      h: 6.0 * scale,
-      topColor: const Color(0xFFFDE047),
-      leftColor: const Color(0xFFD97706),
-      rightColor: const Color(0xFF92400E),
-    );
-
-    // İpek Yolu Heybesi / Kırmızı Eyer Örtüsü (Nomad Saddle Rug)
-    drawIsoCube(
-      canvas,
-      Offset(pos.dx + 0.5 * cosIso * scale, pos.dy - 10 * scale - bobY),
-      w: 6.0 * scale,
-      d: 11.0 * scale,
-      h: 3.0 * scale,
-      topColor: const Color(0xFFDC2626),
-      leftColor: const Color(0xFFB91C1C),
-      rightColor: const Color(0xFF991B1B),
-    );
-
-    // Uzun Boyun
-    final Offset neckPos = Offset(
-      pos.dx - 9 * cosIso * scale + headSway * cosIso,
-      pos.dy - 15 * scale - bobY + headSway * sinIso,
-    );
-    drawIsoCube(
-      canvas,
-      neckPos,
-      w: 5.0 * scale,
-      d: 5.0 * scale,
-      h: 6.0 * scale,
-      topColor: const Color(0xFFF59E0B),
-      leftColor: bodyLeft,
-      rightColor: bodyRight,
-    );
-
-    // Baş & Çene
-    final Offset headPos = Offset(neckPos.dx - 3 * cosIso * scale, neckPos.dy + 2 * scale);
-    drawIsoCube(
-      canvas,
-      headPos,
-      w: 6.0 * scale,
-      d: 4.5 * scale,
-      h: 4.5 * scale,
-      topColor: const Color(0xFFFBBF24),
-      leftColor: bodyLeft,
-      rightColor: bodyRight,
-    );
-    // Burun
-    drawIsoCube(
-      canvas,
-      Offset(headPos.dx - 3.5 * cosIso * scale, headPos.dy + 1.5 * scale),
-      w: 3.5 * scale,
-      d: 3.5 * scale,
-      h: 3.0 * scale,
-      topColor: const Color(0xFF451A03),
-      leftColor: const Color(0xFF331402),
-      rightColor: const Color(0xFF220D01),
-    );
-
-    // Kuyruk
-    drawIsoCube(
-      canvas,
-      Offset(pos.dx + 9 * cosIso * scale + tailWag, pos.dy - 5 * scale - bobY),
-      w: 2.0 * scale,
-      d: 2.0 * scale,
-      h: 6.0 * scale,
-      topColor: bodyLeft,
-      leftColor: bodyRight,
-      rightColor: bodyRight,
-    );
-
-    // 4 Sağlam Çöl Bacağı
-    final double legH = 7.0 * scale;
-    _drawCamelLeg(canvas, Offset(pos.dx - 5 * cosIso * scale, pos.dy - 1 * scale), legH, scale, bodyTop, bodyLeft, bodyRight);
-    _drawCamelLeg(canvas, Offset(pos.dx - 2 * cosIso * scale, pos.dy - 4 * scale), legH, scale, bodyTop, bodyLeft, bodyRight);
-    _drawCamelLeg(canvas, Offset(pos.dx + 4 * cosIso * scale, pos.dy - 1 * scale), legH, scale, bodyTop, bodyLeft, bodyRight);
-    _drawCamelLeg(canvas, Offset(pos.dx + 7 * cosIso * scale, pos.dy - 4 * scale), legH, scale, bodyTop, bodyLeft, bodyRight);
   }
 
-  static void _drawCamelLeg(Canvas canvas, Offset lPos, double legH, double scale, Color top, Color left, Color right) {
-    drawIsoCube(canvas, lPos, w: 2.5 * scale, d: 2.5 * scale, h: legH, topColor: top, leftColor: left, rightColor: right);
-    drawIsoCube(canvas, Offset(lPos.dx, lPos.dy + legH - 1.5), w: 3.0 * scale, d: 3.0 * scale, h: 1.5 * scale, topColor: const Color(0xFF78350F), leftColor: const Color(0xFF5A2408), rightColor: const Color(0xFF451A03));
-  }
-
-  /// 3D Voxel Kutup Beyaz Tilkisi (Arctic Fox - Kar Beyazı Kürk, Çalı Kuyruk, Tetikte Duruş)
+  /// 3D Voxel Kutup Tilkisi (VoxelFaunaRenderer Köprüsü)
   static void drawVoxelArcticFox(
     Canvas canvas,
     Offset pos, {
@@ -1322,106 +903,17 @@ class VoxelIsometricRenderer {
     int seed = 0,
     bool flipX = false,
   }) {
-    if (flipX) {
-      canvas.save();
-      canvas.translate(pos.dx, pos.dy);
-      canvas.scale(-1.0, 1.0);
-      drawVoxelArcticFox(canvas, Offset.zero, animTime: animTime, scale: scale, seed: seed, flipX: false);
-      canvas.restore();
-      return;
-    }
-
-    final double t = animTime + ((seed * 2.71) % 20.0);
-    final double bobY = math.sin(t * 2.0) * 0.4 * scale;
-    final double tailSway = math.sin(t * 3.5) * 2.2 * scale;
-    final double headTurn = math.sin(t * 1.6) * 1.5 * scale;
-
-    const Color furTop = Color(0xFFFFFFFF);
-    const Color furLeft = Color(0xFFF1F5F9);
-    const Color furRight = Color(0xFFE2E8F0);
-
-    // Gövde
-    drawIsoCube(
+    VoxelFaunaRenderer.drawArcticFox(
       canvas,
-      Offset(pos.dx, pos.dy - 4 * scale - bobY),
-      w: 9.0 * scale,
-      d: 6.0 * scale,
-      h: 5.5 * scale,
-      topColor: furTop,
-      leftColor: furLeft,
-      rightColor: furRight,
-      drawShadow: true,
-      shadowOpacity: 0.22,
+      pos,
+      animTime: animTime,
+      scale: scale,
+      seed: seed,
+      flipX: flipX,
     );
-
-    // Baş
-    final Offset headPos = Offset(
-      pos.dx - 5 * cosIso * scale + headTurn * cosIso,
-      pos.dy - 8 * scale - bobY + headTurn * sinIso,
-    );
-    drawIsoCube(
-      canvas,
-      headPos,
-      w: 4.5 * scale,
-      d: 4.5 * scale,
-      h: 4.0 * scale,
-      topColor: furTop,
-      leftColor: furLeft,
-      rightColor: furRight,
-    );
-
-    // Sivri Kutup Kulakları (Siyah uçlu)
-    drawIsoCube(
-      canvas,
-      Offset(headPos.dx - 1.5 * cosIso * scale, headPos.dy - 3.5 * scale),
-      w: 1.5 * scale,
-      d: 1.5 * scale,
-      h: 2.5 * scale,
-      topColor: const Color(0xFF334155),
-      leftColor: const Color(0xFF1E293B),
-      rightColor: const Color(0xFF0F172A),
-    );
-    drawIsoCube(
-      canvas,
-      Offset(headPos.dx + 1.5 * cosIso * scale, headPos.dy - 3.5 * scale),
-      w: 1.5 * scale,
-      d: 1.5 * scale,
-      h: 2.5 * scale,
-      topColor: const Color(0xFF334155),
-      leftColor: const Color(0xFF1E293B),
-      rightColor: const Color(0xFF0F172A),
-    );
-
-    // Minik Siyah Burun
-    drawIsoCube(
-      canvas,
-      Offset(headPos.dx - 3 * cosIso * scale, headPos.dy + 1 * scale),
-      w: 2.0 * scale,
-      d: 2.0 * scale,
-      h: 1.5 * scale,
-      topColor: const Color(0xFF0F172A),
-      leftColor: const Color(0xFF020617),
-      rightColor: const Color(0xFF000000),
-    );
-
-    // Kabarık Çalı Kuyruk (Fluffy Bushy Tail)
-    drawIsoCube(
-      canvas,
-      Offset(pos.dx + 6 * cosIso * scale + tailSway, pos.dy - 4 * scale - bobY),
-      w: 4.5 * scale,
-      d: 4.5 * scale,
-      h: 4.5 * scale,
-      topColor: furTop,
-      leftColor: furLeft,
-      rightColor: furRight,
-    );
-
-    // Bacaklar
-    drawIsoCube(canvas, Offset(pos.dx - 2 * cosIso * scale, pos.dy), w: 1.5 * scale, d: 1.5 * scale, h: 2.5 * scale, topColor: furLeft, leftColor: furRight, rightColor: furRight);
-    drawIsoCube(canvas, Offset(pos.dx + 3 * cosIso * scale, pos.dy - 2 * scale), w: 1.5 * scale, d: 1.5 * scale, h: 2.5 * scale, topColor: furLeft, leftColor: furRight, rightColor: furRight);
   }
 
-  /// 3D Voxel Dağ Yaban Keçisi (Mountain Ibex - Kıvrık Boynuzlar, Sarp Kayalık Duruşu)
+  /// 3D Voxel Dağ Yaban Keçisi (VoxelFaunaRenderer Köprüsü)
   static void drawVoxelMountainIbex(
     Canvas canvas,
     Offset pos, {
@@ -1430,82 +922,17 @@ class VoxelIsometricRenderer {
     int seed = 0,
     bool flipX = false,
   }) {
-    if (flipX) {
-      canvas.save();
-      canvas.translate(pos.dx, pos.dy);
-      canvas.scale(-1.0, 1.0);
-      drawVoxelMountainIbex(canvas, Offset.zero, animTime: animTime, scale: scale, seed: seed, flipX: false);
-      canvas.restore();
-      return;
-    }
-
-    final double t = animTime + ((seed * 2.19) % 20.0);
-    final double bobY = math.sin(t * 1.4) * 0.3 * scale;
-    final double headYaw = math.sin(t * 1.8) * 1.0 * scale;
-
-    const Color coatTop = Color(0xFF94A3B8);
-    const Color coatLeft = Color(0xFF64748B);
-    const Color coatRight = Color(0xFF475569);
-
-    // Gövde
-    drawIsoCube(
+    VoxelFaunaRenderer.drawMountainIbex(
       canvas,
-      Offset(pos.dx, pos.dy - 6 * scale - bobY),
-      w: 10.0 * scale,
-      d: 6.5 * scale,
-      h: 6.0 * scale,
-      topColor: coatTop,
-      leftColor: coatLeft,
-      rightColor: coatRight,
-      drawShadow: true,
-      shadowOpacity: 0.25,
+      pos,
+      animTime: animTime,
+      scale: scale,
+      seed: seed,
+      flipX: flipX,
     );
-
-    // Baş & Boyun
-    final Offset headPos = Offset(
-      pos.dx - 5 * cosIso * scale + headYaw * cosIso,
-      pos.dy - 11 * scale - bobY,
-    );
-    drawIsoCube(
-      canvas,
-      headPos,
-      w: 4.5 * scale,
-      d: 4.5 * scale,
-      h: 4.5 * scale,
-      topColor: const Color(0xFFCBD5E1),
-      leftColor: coatLeft,
-      rightColor: coatRight,
-    );
-
-    // Büyük Kıvrık Dağ Boynuzları (Swept-back Ibex Ridge Horns)
-    drawIsoCube(
-      canvas,
-      Offset(headPos.dx + 1 * cosIso * scale, headPos.dy - 5 * scale),
-      w: 2.0 * scale,
-      d: 2.0 * scale,
-      h: 7.0 * scale,
-      topColor: const Color(0xFF334155),
-      leftColor: const Color(0xFF1E293B),
-      rightColor: const Color(0xFF0F172A),
-    );
-    drawIsoCube(
-      canvas,
-      Offset(headPos.dx + 3 * cosIso * scale, headPos.dy - 8 * scale),
-      w: 3.5 * scale,
-      d: 2.0 * scale,
-      h: 2.5 * scale,
-      topColor: const Color(0xFF475569),
-      leftColor: const Color(0xFF334155),
-      rightColor: const Color(0xFF1E293B),
-    );
-
-    // Bacaklar (Sarp kaya tutuşu)
-    final double legH = 5.5 * scale;
-    drawIsoCube(canvas, Offset(pos.dx - 3 * cosIso * scale, pos.dy - 1 * scale), w: 1.8 * scale, d: 1.8 * scale, h: legH, topColor: coatTop, leftColor: coatLeft, rightColor: coatRight);
-    drawIsoCube(canvas, Offset(pos.dx + 3 * cosIso * scale, pos.dy - 2 * scale), w: 1.8 * scale, d: 1.8 * scale, h: legH, topColor: coatTop, leftColor: coatLeft, rightColor: coatRight);
   }
 
-  /// 3D Voxel Uçan Kuş / Kartal / Turna / Martı
+  /// 3D Voxel Gökyüzü Kuşu (VoxelFaunaRenderer Köprüsü)
   static void drawVoxelBird(
     Canvas canvas,
     Offset pos, {
@@ -1515,45 +942,18 @@ class VoxelIsometricRenderer {
     Color wingColor = const Color(0xFFF8FAFC),
     Color wingTipColor = const Color(0xFF94A3B8),
   }) {
-    final double wingAngle = math.sin(wingAnim) * 0.5;
-
-    drawIsoCube(
+    VoxelFaunaRenderer.drawSkyBird(
       canvas,
       pos,
-      w: 5.0 * scale,
-      d: 7.0 * scale,
-      h: 3.5 * scale,
-      topColor: bodyColor,
-      leftColor: wingTipColor,
-      rightColor: wingTipColor,
-    );
-
-    final Offset leftWing = Offset(pos.dx - 4 * cosIso * scale, pos.dy - 1 * scale + wingAngle * 4);
-    drawIsoCube(
-      canvas,
-      leftWing,
-      w: 6.0 * scale,
-      d: 3.0 * scale,
-      h: 1.5 * scale,
-      topColor: wingColor,
-      leftColor: bodyColor,
-      rightColor: wingTipColor,
-    );
-
-    final Offset rightWing = Offset(pos.dx + 4 * cosIso * scale, pos.dy - 1 * scale + wingAngle * 4);
-    drawIsoCube(
-      canvas,
-      rightWing,
-      w: 6.0 * scale,
-      d: 3.0 * scale,
-      h: 1.5 * scale,
-      topColor: wingColor,
-      leftColor: wingTipColor,
-      rightColor: wingTipColor,
+      wingAnim: wingAnim,
+      scale: scale,
+      bodyColor: bodyColor,
+      wingColor: wingColor,
+      wingTipColor: wingTipColor,
     );
   }
 
-  /// 3D Voxel Asil Bozkır Yılkı Atı (Yele, Kuyruk, Baş Sallama ve Yaylanma)
+  /// 3D Voxel Asil Bozkır Yılkı Atı (VoxelFaunaRenderer Köprüsü)
   static void drawVoxelHorse(
     Canvas canvas,
     Offset pos, {
@@ -1563,214 +963,14 @@ class VoxelIsometricRenderer {
     bool flipX = false,
     double startleProgress = 0.0,
   }) {
-    if (flipX) {
-      canvas.save();
-      canvas.translate(pos.dx, pos.dy);
-      canvas.scale(-1.0, 1.0);
-      drawVoxelHorse(canvas, Offset.zero, animTime: animTime, scale: scale, seed: seed, flipX: false, startleProgress: startleProgress);
-      canvas.restore();
-      return;
-    }
-
-    final double timeOffset = (seed * 2.83) % 20.0;
-    final double t = animTime + timeOffset;
-    final int coatVariant = seed % 4; // 0: Doru (Kahve), 1: Yağız (Siyah), 2: Kır (Beyaz), 3: Alaca
-    final int pose = (seed ~/ 4) % 3;
-
-    double bobY = 0.0;
-    double headTilt = 0.0;
-    double headYaw = 0.0;
-    final double tailSwing = math.sin(t * 4.0) * 1.8 * scale;
-
-    Color coatTop, coatLeft, coatRight;
-    Color maneColor;
-
-    switch (coatVariant) {
-      case 0: // Doru At (Canlı Kehribar Sırt, Derin Maun Yanlar)
-        coatTop = const Color(0xFFD97706);
-        coatLeft = const Color(0xFF92400E);
-        coatRight = const Color(0xFF451A03);
-        maneColor = const Color(0xFF0F172A);
-        break;
-      case 1: // Yağız At (Kömür Siyahı & Işıltılı Sırt)
-        coatTop = const Color(0xFF475569);
-        coatLeft = const Color(0xFF1E293B);
-        coatRight = const Color(0xFF020617);
-        maneColor = const Color(0xFF020617);
-        break;
-      case 2: // Kır At (3D Gölgeli İpek Beyazı)
-        coatTop = const Color(0xFFFFFFFF);
-        coatLeft = const Color(0xFFCBD5E1);
-        coatRight = const Color(0xFF64748B);
-        maneColor = const Color(0xFFE2E8F0);
-        break;
-      case 3: // Kestane / Alaca
-      default:
-        coatTop = const Color(0xFFF59E0B);
-        coatLeft = const Color(0xFFB45309);
-        coatRight = const Color(0xFF78350F);
-        maneColor = const Color(0xFFFEF08A);
-        break;
-    }
-
-    // Dokunsal Dokunma İrkintisi (Startle Jump on Tap)
-    if (startleProgress > 0.0) {
-      final double startleJump = math.sin(startleProgress * math.pi) * 6.0 * scale;
-      bobY += startleJump;
-      headTilt = -4.0 * scale;
-    } else if (pose == 0) {
-      final double cycle = t % 6.0;
-      if (cycle < 4.0) {
-        headTilt = 4.5 * scale;
-        bobY = math.sin(t * 2.0) * 0.4 * scale;
-      } else {
-        headTilt = -1.0 * scale;
-        headYaw = math.sin(t * 1.5) * 1.5 * scale;
-      }
-    } else if (pose == 1) {
-      bobY = math.sin(t * 1.2) * 0.5 * scale;
-      headYaw = math.sin(t * 1.8) * 1.2 * scale;
-      headTilt = -1.5 * scale;
-    } else {
-      final double stride = (t % 2.5) / 2.5;
-      bobY = math.sin(stride * math.pi * 2).abs() * 1.6 * scale;
-    }
-
-    // Gövde
-    drawIsoCube(
+    VoxelFaunaRenderer.drawHorse(
       canvas,
-      Offset(pos.dx, pos.dy - 8 * scale - bobY),
-      w: 16.0 * scale,
-      d: 9.0 * scale,
-      h: 9.0 * scale,
-      topColor: coatTop,
-      leftColor: coatLeft,
-      rightColor: coatRight,
-      drawShadow: true,
-      shadowOpacity: 0.28,
-    );
-
-    // Bozkır Kuşu (Atın sırtına konan minik sığırcık kuşu - Seyrek & Doğal)
-    if (pose == 2 && startleProgress <= 0.01) {
-      drawVoxelBird(
-        canvas,
-        Offset(pos.dx + 2 * cosIso * scale, pos.dy - 12 * scale - bobY),
-        scale: 0.35 * scale,
-        wingAnim: animTime * 0.5,
-        bodyColor: const Color(0xFF64748B),
-        wingColor: const Color(0xFF475569),
-        wingTipColor: const Color(0xFF334155),
-      );
-    }
-
-    // Boyun
-    final Offset neckPos = Offset(
-      pos.dx - 8 * cosIso * scale + headYaw * cosIso,
-      pos.dy - 12 * scale - bobY + 2 * sinIso * scale + headTilt,
-    );
-    drawIsoCube(
-      canvas,
-      neckPos,
-      w: 6.0 * scale,
-      d: 6.0 * scale,
-      h: 10.0 * scale,
-      topColor: coatTop,
-      leftColor: coatLeft,
-      rightColor: coatRight,
-    );
-
-    // Yele
-    drawIsoCube(
-      canvas,
-      Offset(neckPos.dx + 2 * cosIso * scale, neckPos.dy - 4 * scale),
-      w: 3.0 * scale,
-      d: 4.0 * scale,
-      h: 8.0 * scale,
-      topColor: maneColor,
-      leftColor: maneColor,
-      rightColor: maneColor,
-    );
-
-    // Baş
-    final Offset headPos = Offset(
-      neckPos.dx - 4 * cosIso * scale,
-      neckPos.dy - 8 * scale,
-    );
-    drawIsoCube(
-      canvas,
-      headPos,
-      w: 5.5 * scale,
-      d: 5.0 * scale,
-      h: 5.0 * scale,
-      topColor: coatTop,
-      leftColor: coatLeft,
-      rightColor: coatRight,
-    );
-
-    // Burun / Ağız
-    drawIsoCube(
-      canvas,
-      Offset(headPos.dx - 3.5 * cosIso * scale, headPos.dy + 2 * sinIso * scale),
-      w: 3.5 * scale,
-      d: 3.5 * scale,
-      h: 3.5 * scale,
-      topColor: const Color(0xFF1E293B),
-      leftColor: const Color(0xFF0F172A),
-      rightColor: const Color(0xFF020617),
-    );
-
-    // Kulaklar
-    drawIsoCube(
-      canvas,
-      Offset(headPos.dx - 1 * cosIso * scale, headPos.dy - 3.5 * scale),
-      w: 1.5 * scale,
-      d: 1.5 * scale,
-      h: 2.5 * scale,
-      topColor: coatTop,
-      leftColor: coatLeft,
-      rightColor: coatRight,
-    );
-
-    // Kuyruk
-    drawIsoCube(
-      canvas,
-      Offset(pos.dx + 9 * cosIso * scale + tailSwing, pos.dy - 4 * scale - bobY - 4 * sinIso * scale),
-      w: 3.0 * scale,
-      d: 3.0 * scale,
-      h: 9.0 * scale,
-      topColor: maneColor,
-      leftColor: maneColor,
-      rightColor: maneColor,
-    );
-
-    // 4 Bacak (Zero-GC, heap tahsisi olmadan sabit çizim)
-    final double legH = 7.0 * scale;
-    _drawHorseLeg(canvas, Offset(pos.dx - 5 * cosIso * scale, pos.dy - 1 * scale), legH, scale, coatTop, coatLeft, coatRight);
-    _drawHorseLeg(canvas, Offset(pos.dx - 2 * cosIso * scale, pos.dy - 4 * scale), legH, scale, coatTop, coatLeft, coatRight);
-    _drawHorseLeg(canvas, Offset(pos.dx + 4 * cosIso * scale, pos.dy - 1 * scale), legH, scale, coatTop, coatLeft, coatRight);
-    _drawHorseLeg(canvas, Offset(pos.dx + 7 * cosIso * scale, pos.dy - 4 * scale), legH, scale, coatTop, coatLeft, coatRight);
-  }
-
-  static void _drawHorseLeg(Canvas canvas, Offset lPos, double legH, double scale, Color coatTop, Color coatLeft, Color coatRight) {
-    drawIsoCube(
-      canvas,
-      lPos,
-      w: 2.5 * scale,
-      d: 2.5 * scale,
-      h: legH,
-      topColor: coatTop,
-      leftColor: coatLeft,
-      rightColor: coatRight,
-    );
-    drawIsoCube(
-      canvas,
-      Offset(lPos.dx, lPos.dy + legH - 1.5),
-      w: 2.5 * scale,
-      d: 2.5 * scale,
-      h: 1.5 * scale,
-      topColor: const Color(0xFF0F172A),
-      leftColor: const Color(0xFF020617),
-      rightColor: const Color(0xFF020617),
+      pos,
+      animTime: animTime,
+      scale: scale,
+      seed: seed,
+      flipX: flipX,
+      startleProgress: startleProgress,
     );
   }
 
@@ -7096,7 +6296,7 @@ class VoxelIsometricRenderer {
     );
   }
 
-  /// 1. İpek Yolu Kervan Devesi ve Heybe Yükleri (Voxel Caravan Camel)
+  /// 1. İpek Yolu Kervan Devesi ve Heybe Yükleri (VoxelFaunaRenderer Köprüsü)
   static void drawVoxelCaravanCamel(
     Canvas canvas,
     Offset center, {
@@ -7104,100 +6304,12 @@ class VoxelIsometricRenderer {
     double walkCycle = 0.0,
     bool flipX = false,
   }) {
-    final double bob = (math.sin(walkCycle * math.pi * 4).abs()) * 1.5;
-    final double legSwing = math.sin(walkCycle * math.pi * 4) * 2.0;
-    final double sign = flipX ? -1.0 : 1.0;
-
-    // Gövde (Dual Hump Camel Body)
-    drawIsoCube(
+    VoxelFaunaRenderer.drawCaravanCamel(
       canvas,
-      Offset(center.dx, center.dy - 6.0 - bob),
-      w: 8.0,
-      d: 5.0,
-      h: 5.0,
-      topColor: const Color(0xFFD97706),
-      leftColor: const Color(0xFFB45309),
-      rightColor: const Color(0xFF92400E),
-      drawShadow: true,
-      shadowOpacity: 0.3,
-    );
-
-    // Ön ve Arka Hörgüç
-    drawIsoCube(
-      canvas,
-      Offset(center.dx - 2.5 * sign, center.dy - 11.0 - bob),
-      w: 2.8,
-      d: 2.8,
-      h: 3.5,
-      topColor: const Color(0xFFF59E0B),
-      leftColor: const Color(0xFFD97706),
-      rightColor: const Color(0xFFB45309),
-    );
-    drawIsoCube(
-      canvas,
-      Offset(center.dx + 2.5 * sign, center.dy - 11.0 - bob),
-      w: 2.8,
-      d: 2.8,
-      h: 3.5,
-      topColor: const Color(0xFFF59E0B),
-      leftColor: const Color(0xFFD97706),
-      rightColor: const Color(0xFFB45309),
-    );
-
-    // Kervan Sandıkları / İpek Heybeleri
-    drawIsoCube(
-      canvas,
-      Offset(center.dx, center.dy - 8.0 - bob),
-      w: 5.0,
-      d: 6.5,
-      h: 3.0,
-      topColor: const Color(0xFF991B1B), // Kırmızı İpek Sandığı
-      leftColor: const Color(0xFF7F1D1D),
-      rightColor: const Color(0xFF450A0A),
-    );
-
-    // Boyun ve Baş
-    drawIsoCube(
-      canvas,
-      Offset(center.dx + 4.5 * sign, center.dy - 10.0 - bob),
-      w: 2.5,
-      d: 2.5,
-      h: 5.0,
-      topColor: const Color(0xFFD97706),
-      leftColor: const Color(0xFFB45309),
-      rightColor: const Color(0xFF92400E),
-    );
-    drawIsoCube(
-      canvas,
-      Offset(center.dx + 6.0 * sign, center.dy - 14.0 - bob),
-      w: 3.0,
-      d: 2.2,
-      h: 2.0,
-      topColor: const Color(0xFFF59E0B),
-      leftColor: const Color(0xFFD97706),
-      rightColor: const Color(0xFF92400E),
-    );
-
-    // Bacaklar
-    drawIsoCube(
-      canvas,
-      Offset(center.dx - 3.0 * sign + legSwing, center.dy - 1.0),
-      w: 1.6,
-      d: 1.6,
-      h: 5.0,
-      topColor: const Color(0xFFB45309),
-      leftColor: const Color(0xFF92400E),
-      rightColor: const Color(0xFF78350F),
-    );
-    drawIsoCube(
-      canvas,
-      Offset(center.dx + 3.0 * sign - legSwing, center.dy - 1.0),
-      w: 1.6,
-      d: 1.6,
-      h: 5.0,
-      topColor: const Color(0xFFB45309),
-      leftColor: const Color(0xFF92400E),
-      rightColor: const Color(0xFF78350F),
+      center,
+      animTime: animTime,
+      walkCycle: walkCycle,
+      flipX: flipX,
     );
   }
 

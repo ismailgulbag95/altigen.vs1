@@ -15,13 +15,13 @@ void main() {
   });
 
   group('Building Alternatives & Diversification Tests', () {
-    test('Allowed buildings for meadow include all farm varieties and quarry', () {
+    test('Allowed buildings for meadow include all farm varieties (quarry is mountain-only)', () {
       final allowed = GameStateNotifier.getAllowedBuildingsForBiome(TileBiome.meadow);
       expect(allowed, contains(BuildingType.corn));
       expect(allowed, contains(BuildingType.barley));
       expect(allowed, contains(BuildingType.pasture));
       expect(allowed, contains(BuildingType.orchard));
-      expect(allowed, contains(BuildingType.quarry));
+      expect(allowed, isNot(contains(BuildingType.quarry)));
       expect(allowed, contains(BuildingType.windmill));
       expect(allowed, contains(BuildingType.bakery));
     });

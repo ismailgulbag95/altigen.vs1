@@ -240,12 +240,9 @@ class GameStateNotifier extends StateNotifier<GameState> {
           // Merkez (0,0) - Şato yeri
           biome = TileBiome.meadow;
         } else if (dist == 1) {
-          // Radius 1 Garantili Biyom Çekirdeği (Zero Soft-Lock):
-          // İlk 6 komşudan (1,0) Orman, (-1,1) Dağ, (0,1) Çayır garantilidir.
+          // Radius 1: Yalnızca Çayır ve Orman (Dağ ve Tapınak yok)
           if (coord.q == 1 && coord.r == 0) {
             biome = TileBiome.forest;
-          } else if (coord.q == -1 && coord.r == 1) {
-            biome = TileBiome.mountain;
           } else if (coord.q == 0 && coord.r == 1) {
             biome = TileBiome.meadow;
           } else {
@@ -262,16 +259,22 @@ class GameStateNotifier extends StateNotifier<GameState> {
             biome = TileBiome.desert;
           }
         } else if (dist == 3) {
-          // Radius 3: Çayır (%50), Orman (%30), Dağ (%10), Çöl (%10)
-          final roll = random.nextDouble();
-          if (roll < 0.50) {
-            biome = TileBiome.meadow;
-          } else if (roll < 0.80) {
-            biome = TileBiome.forest;
-          } else if (roll < 0.90) {
+          // Radius 3: Garantili Dağ (-2, 3), Garantili Tapınak Yeri (0, 3) Çayır, Orman, Çöl
+          if (coord.q == -2 && coord.r == 3) {
             biome = TileBiome.mountain;
+          } else if (coord.q == 0 && coord.r == 3) {
+            biome = TileBiome.meadow;
           } else {
-            biome = TileBiome.desert;
+            final roll = random.nextDouble();
+            if (roll < 0.50) {
+              biome = TileBiome.meadow;
+            } else if (roll < 0.75) {
+              biome = TileBiome.forest;
+            } else if (roll < 0.90) {
+              biome = TileBiome.mountain;
+            } else {
+              biome = TileBiome.desert;
+            }
           }
         } else {
           // 4 ve üzeri: Özel biyom kümeleri veya dengeli bozkır
@@ -338,13 +341,15 @@ class GameStateNotifier extends StateNotifier<GameState> {
       building: const BuildingModel(type: BuildingType.castle, level: 1),
     );
 
-    // 2. KUTLU TAPINAK YERLEŞİMİ (Tam 11 Adet, Başlangıç Görünür Alanında 1 Garantili Tapınak)
-    // İlk tapınak: Başlangıçta görünür (dist=1) ve hemen fethedilebilir (0, 1) Çayır karosuna yerleştirilir.
-    const initialGuaranteedShrineCoord = HexAxial(0, 1);
+    // 2. KUTLU TAPINAK YERLEŞİMİ (Tam 11 Adet, r=3 Halkasında 1 Garantili Tapınak)
+    // r=1 ve r=2 halkalarında tapınak olamaz; ilk tapınak r=3 (0, 3) Çayır karosuna yerleştirilir.
+    const initialGuaranteedShrineCoord = HexAxial(0, 3);
     final List<HexAxial> placedShrineCoords = [];
 
     final List<HexAxial> landCandidates = map.keys.where((c) {
       if (c.q == 0 && c.r == 0) return false;
+      final int dist = HexMath.hexDistance(const HexAxial(0, 0), c);
+      if (dist <= 2) return false;
       if (c == initialGuaranteedShrineCoord) return false;
       final t = map[c]!;
       if (t.biome == TileBiome.sea || t.biome == TileBiome.mountain) return false;
@@ -1146,10 +1151,10 @@ class GameStateNotifier extends StateNotifier<GameState> {
           'Arazi Kilitli: Çöl ve Orman keşfi için Kağan Otağı Seviye 2 gereklidir.');
       return false;
     }
-    // Dağ ve Sazlık kilit kontrolü: Kağan Otağı Seviye >= 12
-    if ((tile.biome == TileBiome.mountain || tile.biome == TileBiome.wetland) && state.progression.castleLevel < 12) {
+    // Dağ ve Sazlık kilit kontrolü: Kağan Otağı Seviye >= 5
+    if ((tile.biome == TileBiome.mountain || tile.biome == TileBiome.wetland) && state.progression.castleLevel < 5) {
       showToast(
-          'Arazi Kilitli: Dağ ve Sazlık keşfi için Kağan Otağı Seviye 12 gereklidir.');
+          'Arazi Kilitli: Dağ keşfi ve taş madenciliği için Kağan Otağı Seviye 5 gereklidir.');
       return false;
     }
     // Deniz ve Tundra kilit kontrolü: Kağan Otağı Seviye >= 22
@@ -1273,7 +1278,6 @@ class GameStateNotifier extends StateNotifier<GameState> {
           BuildingType.barley,
           BuildingType.pasture,
           BuildingType.orchard,
-          BuildingType.quarry,
           BuildingType.windmill,
           BuildingType.bakery,
           BuildingType.worker,
@@ -1311,7 +1315,6 @@ class GameStateNotifier extends StateNotifier<GameState> {
         ];
       case TileBiome.desert:
         return const [
-          BuildingType.quarry,
           BuildingType.watchtower,
           BuildingType.oasisCistern,
           BuildingType.caravanserai,
@@ -1331,7 +1334,6 @@ class GameStateNotifier extends StateNotifier<GameState> {
         ];
       case TileBiome.volcano:
         return const [
-          BuildingType.quarry,
           BuildingType.steamVent,
           BuildingType.obsidianForge,
           BuildingType.damascusForge,

@@ -21,18 +21,21 @@ void main() {
         final dist = HexMath.hexDistance(center, coord);
 
         if (dist == 1) {
-          // Radius 1: NO Sea, Wetland, Desert, Volcano (Meadow, Forest, Mountain allowed)
+          // Radius 1: Yalnızca Çayır ve Orman (Dağ, Tapınak, Deniz, Sazlık, Çöl, Volkan yok)
+          expect(tile.biome, isNot(TileBiome.mountain));
           expect(tile.biome, isNot(TileBiome.sea));
           expect(tile.biome, isNot(TileBiome.wetland));
           expect(tile.biome, isNot(TileBiome.desert));
           expect(tile.biome, isNot(TileBiome.volcano));
+          expect(tile.hasShrine, isFalse);
         } else if (dist == 2) {
-          // Radius 2: NO Sea, Mountain, Volcano
-          expect(tile.biome, isNot(TileBiome.sea));
+          // Radius 2: Çayır, Orman, Çöl (Dağ, Tapınak, Deniz, Volkan yok)
           expect(tile.biome, isNot(TileBiome.mountain));
+          expect(tile.biome, isNot(TileBiome.sea));
           expect(tile.biome, isNot(TileBiome.volcano));
+          expect(tile.hasShrine, isFalse);
         } else if (dist == 3) {
-          // Radius 3: NO Sea
+          // Radius 3: Deniz yok
           expect(tile.biome, isNot(TileBiome.sea));
         }
       });

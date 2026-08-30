@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hex_rush/core/hex/hex_coordinates.dart';
+import 'package:hex_rush/core/hex/hex_math.dart';
 import 'package:hex_rush/domain/models/hex_tile_model.dart';
 import 'package:hex_rush/presentation/providers/game_state_notifier.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,40 +13,56 @@ void main() {
   });
 
   group('Initial Shrine Placement Tests', () {
-    test('Başlangıçta (0, 1) görünür çayır karosunda garantili Kutlu Tapınak yer alır', () {
+    test('r=1 ve r=2 halkalarında tapınak bulunmaz, r=3 halkasında (0, 3) karosunda 1 garantili Kutlu Tapınak yer alır', () {
       final notifier = GameStateNotifier();
       final state = notifier.state;
 
-      // 1. (0, 1) koordinatındaki karo kontrolü
-      const initialShrineCoord = HexAxial(0, 1);
+      // 1. r=1 ve r=2 halkalarında tapınak olmadığını doğrula
+      const center = HexAxial(0, 0);
+      state.tiles.forEach((coord, tile) {
+        final dist = HexMath.hexDistance(center, coord);
+        if (dist == 1 || dist == 2) {
+          expect(tile.hasShrine, isFalse,
+              reason: 'r=$dist halkasındaki $coord karosunda tapınak bulunmamalıdır');
+        }
+      });
+
+      // 2. (0, 3) koordinatındaki r=3 garantili tapınak kontrolü
+      const initialShrineCoord = HexAxial(0, 3);
       final initialTile = state.tiles[initialShrineCoord];
 
       expect(initialTile, isNotNull);
       expect(initialTile!.state, equals(TileState.discovered),
-          reason: 'Başlangıçta tapınak karosu sis altında olmamalı, görünür (discovered) olmalı');
+          reason: 'Başlangıçta r=3 tapınak karosu görünür (discovered) olmalıdır');
       expect(initialTile.hasShrine, isTrue,
-          reason: 'Başlangıçta (0, 1) karosunda kutlu tapınak bulunmalıdır');
+          reason: 'Başlangıçta (0, 3) karosunda kutlu tapınak bulunmalıdır');
       expect(initialTile.shrine, equals(ShrineType.foodBoost),
-          reason: 'Erken safhada oyuncunun gelişimini hızlandırmak için ilk tapınak Gıda Bereketi olmalıdır');
+          reason: 'Gelişimi hızlandırmak için ilk tapınak Gıda Bereketi olmalıdır');
       expect(initialTile.biome, equals(TileBiome.meadow),
-          reason: 'İlk tapınak Seviye 1 Kağan Otağı ile hemen fethedilebilen Çayır biyomunda olmalıdır');
+          reason: 'İlk tapınak Çayır biyomunda olmalıdır');
 
-      // 2. Haritada toplam 11 adet Kutlu Tapınak olduğunu doğrula
+      // 3. Haritada toplam 11 adet Kutlu Tapınak olduğunu doğrula
       final totalShrines = state.tiles.values.where((t) => t.hasShrine).length;
       expect(totalShrines, equals(11),
           reason: 'Harita genelinde toplam 11 adet kutlu tapınak dengesi korunmalıdır');
     });
 
-    test('Başlangıçtaki tapınak fethedildiğinde bereket çarpanı devreye girer', () {
+    test('r=3 tapınağına ulaşıp fethedildiğinde bereket çarpanı devreye girer', () {
       final notifier = GameStateNotifier();
-      const initialShrineCoord = HexAxial(0, 1);
+      const initialShrineCoord = HexAxial(0, 3);
 
       final initialMultiplier = notifier.state.shrineMultiplier;
       expect(initialMultiplier, equals(1.0));
 
-      // Yeterli gıda ile karoyu fethet
-      final success = notifier.conquerTile(initialShrineCoord);
-      expect(success, isTrue);
+      // (0,1) ve (0,2) fethi ile (0,3)'e hat aç
+      notifier.state = notifier.state.copyWith(
+        resources: notifier.state.resources.copyWith(food: 5000.0),
+        progression: notifier.state.progression.copyWith(castleLevel: 5),
+      );
+
+      expect(notifier.conquerTile(const HexAxial(0, 1)), isTrue);
+      expect(notifier.conquerTile(const HexAxial(0, 2)), isTrue);
+      expect(notifier.conquerTile(initialShrineCoord), isTrue);
 
       final updatedTile = notifier.state.tiles[initialShrineCoord];
       expect(updatedTile!.isOwned, isTrue);
